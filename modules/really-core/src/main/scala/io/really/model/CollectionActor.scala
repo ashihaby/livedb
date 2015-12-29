@@ -420,7 +420,7 @@ class CollectionActor(globals: ReallyGlobals) extends PersistentActor
         JsSuccess(Json.obj(opBody.key -> opBody.value))
 
       case UpdateOp(UpdateCommand.AddNumber, _, JsNumber(v), _) =>
-        oldObject.data \ opBody.key match {
+        (oldObject.data \ opBody.key).get match {
           case JsNumber(originalValue) => JsSuccess(Json.obj(opBody.key -> (originalValue + v)))
           case _ => JsError(__ \ errorKey, ValidationError(s"error.non.numeric.field"))
         }
@@ -653,7 +653,8 @@ class CollectionActor(globals: ReallyGlobals) extends PersistentActor
    * @param context
    * @return
    */
-  private def validateObject(obj: JsObject, model: Model, updateRequest: Request.Update)(implicit context: RequestContext): ValidationResponse =
+  private def validateObject(obj: JsObject, model: Model,
+    updateRequest: Request.Update)(implicit context: RequestContext): ValidationResponse =
     validateFields(obj, model) match {
       case JsSuccess(jsObj: JsObject, _) => // Continue to Reactive Calculation
         //how many reactive fields should be updated based on this update?
@@ -666,7 +667,7 @@ class CollectionActor(globals: ReallyGlobals) extends PersistentActor
         calculateReactiveFields(jsObj, reactiveToBeUpdated) match {
           case JsSuccess(js: JsObject, _) =>
             //add set ops to the updateRequest for all the reactiveFields affected
-            val combinedOps = updateRequest.body.ops ++ reactiveToBeUpdated.map(x => UpdateOp(UpdateCommand.Set, x.key, js \ x.key, None))
+            val combinedOps = updateRequest.body.ops ++ reactiveToBeUpdated.map(x => UpdateOp(UpdateCommand.Set, x.key, (js \ x.key).get, None))
             val newUpdateRequest = updateRequest.copy(body = updateRequest.body.copy(ops = combinedOps))
             model.executeValidate(context, globals, js) match {
               case ModelHookStatus.Succeeded => ValidationResponse.ValidData(js, newUpdateRequest)

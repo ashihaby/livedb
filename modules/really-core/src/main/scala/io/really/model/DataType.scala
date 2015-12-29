@@ -19,6 +19,8 @@ trait DataType[T] {
 
   def valueAsOpt(in: JsValue): Option[T] = readValue(in).asOpt
 
+  def valueAsOpt(in: JsLookupResult): Option[JsValue] = in.validateOpt[JsValue].get //readValue(in).asOpt
+
   protected def getNativeValue(in: Object): T = in.asInstanceOf[T]
 
   def writeJsValue(in: Object): Try[JsValue] =

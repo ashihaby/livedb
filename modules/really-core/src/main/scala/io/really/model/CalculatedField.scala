@@ -57,7 +57,7 @@ case class CalculatedField1[T, A](
   val dependsOn = List(dep1.key)
 
   def inputs(in: JsObject): List[Object] = {
-    val dep1Value = in \ dep1.key
+    val dep1Value = (in \ dep1.key)
     List(dep1.dataType.valueAsOpt(dep1Value).map(_.asInstanceOf[Object]).getOrElse(undefined))
   }
 }

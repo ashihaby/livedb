@@ -17,14 +17,14 @@ case class ReferenceField(
 
   override def read(root: JsPath, input: JsObject): JsResult[JsObject] = {
     //todo check that R is actually an object, not a collection
-    val in = input \ key
+    val in = (input \ key).validateOpt[JsObject].get
     val path = root \ key
     (in, required) match {
-      case (JsNull | _: JsUndefined, true) =>
+      case (None, true) =>
         JsError(path, "value.required")
-      case (JsNull | _: JsUndefined, false) =>
+      case (None, false) =>
         JsSuccess(Json.obj(key -> JsNull), path)
-      case (v, _) =>
+      case (Some(v), _) =>
         v.validate[R] match {
           case JsSuccess(v, _) if (v.skeleton == collectionR) =>
             JsSuccess(Json.obj(key -> in), path)

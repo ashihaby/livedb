@@ -3,27 +3,25 @@
  */
 package io.really.model
 
-import akka.actor.{ ActorRef, Stash, Actor, ActorLogging }
+import akka.actor.{ Stash, Actor, ActorLogging }
 import akka.pattern.{ AskTimeoutException, ask }
 import akka.util.Timeout
-
-import _root_.io.really.json.collection.JSONCollection
 import _root_.io.really.model.persistent.ModelRegistry.ModelResult
 import _root_.io.really.js.JsResultHelpers
-import _root_.io.really.json.BSONFormats.BSONDocumentFormat
 import _root_.io.really.model.persistent.ModelRegistry.RequestModel.GetModel
 import _root_.io.really.protocol._
 import _root_.io.really.Result.{ ReadResult, GetResult }
 import io.really._
 import _root_.io.really.rql.RQL._
 import _root_.io.really.rql.RQLTokens.PaginationToken
-import _root_.io.really.rql.writes.mongo.MongoWrites._
 import _root_.io.really.gorilla.SubscriptionManager.SubscribeOnQuery
 import play.api.libs.json._
+import play.modules.reactivemongo.json.collection._
+import play.modules.reactivemongo.json._
+import _root_.io.really.rql.writes.mongo.MongoWrites._
 import reactivemongo.api.Cursor
 import reactivemongo.core.commands.Count
 import reactivemongo.core.errors.DatabaseException
-
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
@@ -246,7 +244,7 @@ class ReadHandler(globals: ReallyGlobals) extends Actor with Stash with ActorLog
       case f if modelFields.get(f).isDefined && modelFields(f).isInstanceOf[CalculatedField[_]] =>
         modelFields(f).read(JsPath(), doc)
       case f if modelFields.get(f).isDefined =>
-        JsSuccess(Json.obj(f -> (doc \ f)))
+        JsSuccess(Json.obj(f -> (doc \ f).get))
     }.toList
 
     JsResultHelpers.merge(jsResults) match {
@@ -264,11 +262,14 @@ class ReadHandler(globals: ReallyGlobals) extends Actor with Stash with ActorLog
    * @return
    */
   private def getTotalCount(collection: JSONCollection, cmdOpts: ReadOpts): Future[Option[Int]] = {
-    if (!cmdOpts.includeTotalCount) return Future.successful(None)
-    val query = BSONDocumentFormat.partialReads(Json.toJson(cmdOpts.query).as[JsObject]).asOpt
-    // query shouldn't include the token or the _deleted to get accurate results (it token is included)
-    val command = Count(collection.name, query, None)
-    globals.mongodbConnection.command(command).map(Option[Int])
+    if (!cmdOpts.includeTotalCount) {
+      Future.successful(None)
+    } else {
+      val query = BSONDocumentFormat.partialReads(Json.toJson(cmdOpts.query).as[JsObject]).asOpt
+      // query shouldn't include the token or the _deleted to get accurate results (it token is included)
+      val command = Count(collection.name, query, None)
+      globals.mongodbConnection.command(command).map(Option[Int])
+    }
   }
 
   /**
@@ -277,8 +278,9 @@ class ReadHandler(globals: ReallyGlobals) extends Actor with Stash with ActorLog
    * @return
    */
   private def getTokens(items: List[ReadItem]): Option[ReadTokens] =
-    if (items.isEmpty) None
-    else {
+    if (items.isEmpty) {
+      None
+    } else {
       val nextToken = PaginationToken((items.last.body \ "_r").as[R].head.id.get, 1)
       val prevToken = PaginationToken((items.head.body \ "_r").as[R].head.id.get, 0)
       Some(ReadTokens(nextToken, prevToken))
@@ -293,12 +295,12 @@ class ReadHandler(globals: ReallyGlobals) extends Actor with Stash with ActorLog
    */
   private def normalizeObject(obj: JsObject, fields: Set[FieldKey], hiddenFields: Set[FieldKey]): JsObject =
     fields.foldLeft(Json.obj()) {
-      case (newObj, key) if !hiddenFields.contains(key) => newObj + (key -> (obj \ key))
+      case (newObj, key) if !hiddenFields.contains(key) => newObj + (key -> (obj \ key).get)
       case (newObj, key) => newObj
     }
 
   private def addSystemFields(storedDoc: JsObject, normalizedObject: JsObject): JsObject =
-    normalizedObject ++ Json.obj("_r" -> (storedDoc \ "_r"), "_rev" -> (storedDoc \ "_rev").as[Long])
+    normalizedObject ++ Json.obj("_r" -> (storedDoc \ "_r").get, "_rev" -> (storedDoc \ "_rev").as[Long])
 
   /**
    * Get fields that will be queried from the Projection DB

@@ -4,14 +4,14 @@
 package io.really.model.materializer
 
 import io.really._
-import _root_.io.really.json.collection.JSONCollection
 import _root_.io.really.model.{ ModelVersion, Model }
 import org.joda.time.DateTime
-import play.api.libs.json.{ Json, JsObject }
+import play.api.libs.json._
 import reactivemongo.api.Cursor
 import reactivemongo.api.indexes.{ IndexType, Index }
 import reactivemongo.core.errors.DatabaseException
-
+import play.modules.reactivemongo.json._
+import play.modules.reactivemongo.json.collection._
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 

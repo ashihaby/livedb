@@ -33,30 +33,30 @@ trait ActiveField[T] extends Field[T] {
 
   def read(root: JsPath, input: JsObject): JsResult[JsObject] = {
     //first extract only the value we are interested in
-    val in = input \ key
+    val in = (input \ key).validateOpt[JsValue].get
     val path = root \ key
     // check if in == JsNull && required == true, if default isDefined, generate Default
     // if default is None, fail.
     // if Default is defined, generate default and continue the flow with this value
     (in, required) match {
-      case (JsNull | _: JsUndefined, true) if default.isEmpty => //fail
+      case (None, true) if default.isEmpty => //fail
         JsError(path, "value.required")
-      case (JsNull | _: JsUndefined, false) if default.isEmpty => // default to set the value to null
+      case (None, false) if default.isEmpty => // default to set the value to null
         JsSuccess(Json.obj(key -> JsNull), path)
-      case (JsNull | _: JsUndefined, _) if default.isDefined => // get default value
+      case (None, _) if default.isDefined => // get default value
         JsResultHelpers.repath(path, readDefault(path).flatMap(a => validate(path, a)))
-      case (e, _) => //run through validator
+      case (Some(e), _) => //run through validator
         JsResultHelpers.repath(path, validate(path, e))
     }
   }
 
   protected def validate(path: JsPath, in: JsValue): JsResult[JsObject] =
-    if (in == JsNull)
+    if (in == JsNull) {
       JsSuccess(Json.obj(key -> JsNull), path)
-    else
+    } else {
       // validate that (in) is readable by dataType
       dataType.readJsValue(in).flatMap(runThroughValidator(path, _))
-
+    }
 }
 
 trait ReactiveField[T] extends Field[T]

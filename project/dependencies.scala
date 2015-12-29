@@ -10,7 +10,9 @@ object Dependencies {
   val snakeyaml = "org.yaml" % "snakeyaml" % "1.14"
   val commonsIO= "commons-io" % "commons-io" % "2.4"
   val parserCombinator = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2"
-  val reactivemongo = "org.reactivemongo" %% "reactivemongo" % "0.10.5.0.akka23"
+  val reactivemongo = "org.reactivemongo" %% "reactivemongo" % "0.11.9"
+  val reactivemongoPlay = "org.reactivemongo" %% "play2-reactivemongo" % "0.11.2.play24"
+  val reactivemongoJson = "org.reactivemongo" %% "reactivemongo-play-json" % "0.11.9"
   val embedmongo = "com.github.simplyscala" %% "scalatest-embedmongo" % "0.2.2" % "test"
   val slick = "com.typesafe.slick" %% "slick" % "2.1.0"
   val h2 = "com.h2database" % "h2" % "1.3.175"
@@ -21,7 +23,7 @@ object Dependencies {
 
   object Akka {
     private val akkaBase = "com.typesafe.akka"
-    private val version = "2.3.9"
+    private val version = "2.3.12"
 
     val agent = akkaBase %% "akka-agent" % version
     val testKit = akkaBase %% "akka-testkit" % version % "test"

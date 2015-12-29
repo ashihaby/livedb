@@ -13,9 +13,9 @@ import io.really.model.persistent.PersistentModelStore
 import io.really.protocol.{ ReadOpts, GetOpts }
 import io.really.Result.{ ReadResult, GetResult }
 import io.really._
-import _root_.io.really.json.collection.JSONCollection
 import _root_.io.really.rql.RQL.{ Term, Operator, TermValue, SimpleQuery, EmptyQuery }
 import _root_.io.really.rql.RQLTokens.PaginationToken
+import play.modules.reactivemongo.json.collection.JSONCollection
 import scala.concurrent.duration._
 
 import play.api.libs.json._

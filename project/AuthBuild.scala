@@ -3,7 +3,7 @@
  */
 import sbt._
 import Keys._
-import play.Play.autoImport._
+import play.sbt.Play.autoImport._
 import PlayKeys._
 
 object AuthBuild {

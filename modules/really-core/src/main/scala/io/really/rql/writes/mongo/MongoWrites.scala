@@ -88,7 +88,7 @@ object MongoWrites {
   /*
    * JSON Writes for Query
    */
-  implicit object QueryWrites extends Writes[Query] {
+  implicit object QueryWrites extends OWrites[Query] {
 
     def writes(q: Query): JsObject = q match {
       case EmptyQuery => Json.obj()

@@ -5,7 +5,7 @@ import sbt._
 import Keys._
 import com.typesafe.sbt.SbtMultiJvm
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys.MultiJvm
-import play.Play.autoImport._
+import play.sbt.Play.autoImport._
 
 
 object CoreBuild {
@@ -27,6 +27,8 @@ object CoreBuild {
       snakeyaml,
       embedmongo,
       reactivemongo,
+      reactivemongoPlay,
+      reactivemongoJson,
       akkaPersistenceMongo,
       slick,
       h2,

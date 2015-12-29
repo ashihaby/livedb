@@ -102,11 +102,8 @@ package object model {
       }.toMap
 
     @transient
-    lazy val factory = new NashornScriptEngineFactory
-    @transient
     lazy val executeValidator: Option[Validator] = jsHooks.onValidate.map { onValidateCode =>
-      val validateEngine = factory.getScriptEngine(Array("-strict", "--no-java", "--no-syntax-extensions"))
-      JsTools.injectSDK(validateEngine.getContext.getBindings(ScriptContext.ENGINE_SCOPE))
+      val validateEngine = JsTools.newEngineWithSDK()
 
       val codeTemplate =
         s"""
@@ -145,8 +142,7 @@ package object model {
 
     @transient
     lazy val executePreDeleteValidator: Option[PreDelete] = jsHooks.preDelete.map { preDeleteCode =>
-      val validateEngine = factory.getScriptEngine(Array("-strict", "--no-java", "--no-syntax-extensions"))
-      JsTools.injectSDK(validateEngine.getContext.getBindings(ScriptContext.ENGINE_SCOPE))
+      val validateEngine = JsTools.newEngineWithSDK()
 
       val codeTemplate =
         s"""
@@ -163,8 +159,7 @@ package object model {
 
     @transient
     lazy val executePreUpdateValidator: Option[PreUpdate] = jsHooks.preUpdate.map { preUpdateCode =>
-      val validateEngine = factory.getScriptEngine(Array("-strict", "--no-java", "--no-syntax-extensions"))
-      JsTools.injectSDK(validateEngine.getContext.getBindings(ScriptContext.ENGINE_SCOPE))
+      val validateEngine = JsTools.newEngineWithSDK()
 
       val codeTemplate =
         s"""

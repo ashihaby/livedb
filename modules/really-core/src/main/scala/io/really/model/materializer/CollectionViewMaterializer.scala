@@ -261,7 +261,7 @@ class CollectionViewMaterializer(val globals: ReallyGlobals) extends PersistentV
       }
 
     case Event(OperationSucceeded(r, obj), DBOperationInfo(DBOperation.Get, Some(DBOperation.Delete), model, referencedCollections, event: CollectionActorEvent.Deleted, currentSequence)) =>
-      val newObj = obj.copy(obj.fields.filter(_._1.startsWith("_"))) ++ Json.obj(
+      val newObj = obj.copy(obj.fields.filter(_._1.startsWith("_")).toMap) ++ Json.obj(
         Model.DeletedField -> true
       )
       deleteObject(newObj, event.rev, event.modelVersion) pipeTo self
